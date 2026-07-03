@@ -1,0 +1,829 @@
+
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#103a5a">
+  <title>Checklist Oględzin Mieszkania</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    :root {
+      --bg: #f3f7f0;
+      --card: #ffffff;
+      --ink: #142028;
+      --muted: #5d6a70;
+      --brand: #103a5a;
+      --accent: #e8f0dc;
+      --good: #2f7a45;
+      --bad: #ad2e2e;
+      --border: #d9e3d3;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 8% 10%, #fef9ec 0%, transparent 38%),
+        radial-gradient(circle at 95% 15%, #d8ebfa 0%, transparent 30%),
+        var(--bg);
+      min-height: 100vh;
+    }
+
+    .wrap {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 20px 14px 42px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 8px 28px rgba(16, 58, 90, 0.08);
+      padding: 14px;
+    }
+
+    h1 {
+      margin: 4px 0 2px;
+      font-size: clamp(1.3rem, 2.2vw, 1.8rem);
+      color: var(--brand);
+    }
+
+    h2 {
+      margin: 0 0 10px;
+      font-size: 1.1rem;
+      color: var(--brand);
+    }
+
+    .sub {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .grid.two {
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+
+    label {
+      display: block;
+      font-size: 0.88rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    input, select, textarea, button {
+      width: 100%;
+      border: 1px solid #c6d3d6;
+      border-radius: 10px;
+      padding: 9px 10px;
+      font: inherit;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    button {
+      cursor: pointer;
+      background: var(--brand);
+      color: #fff;
+      border: 0;
+      transition: transform .15s ease, opacity .15s ease;
+    }
+
+    button:hover { transform: translateY(-1px); opacity: 0.96; }
+    button.secondary { background: #3f5968; }
+    button.ghost { background: #eff5f7; color: #214455; border: 1px solid #cadae2; }
+    button.good { background: var(--good); }
+    button.bad { background: var(--bad); }
+
+    .actions {
+      display: grid;
+      gap: 8px;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    }
+
+    .step {
+      display: grid;
+      gap: 10px;
+      border: 1px solid #d8e5d9;
+      border-radius: 12px;
+      padding: 12px;
+      background: #f9fcf7;
+    }
+
+    .step .cat {
+      color: #3f5f3e;
+      font-size: .85rem;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .step .txt {
+      font-size: 1.06rem;
+      font-weight: 600;
+      line-height: 1.35;
+    }
+
+    .progress {
+      height: 10px;
+      border-radius: 99px;
+      background: #dee8e0;
+      overflow: hidden;
+    }
+
+    .progress > div {
+      height: 100%;
+      background: linear-gradient(90deg, #7cb774, #2f7a45);
+      width: 0;
+      transition: width .2s;
+    }
+
+    .stepFooter {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .items {
+      display: grid;
+      gap: 8px;
+      max-height: 300px;
+      overflow: auto;
+      padding-right: 2px;
+    }
+
+    .item {
+      border: 1px solid #e3e9e5;
+      border-radius: 10px;
+      padding: 8px;
+      display: grid;
+      grid-template-columns: 1fr 140px;
+      gap: 8px;
+      align-items: center;
+      background: #fff;
+    }
+
+    .item small { color: var(--muted); }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 8px;
+    }
+
+    .stat {
+      border: 1px solid #deeaef;
+      border-radius: 10px;
+      padding: 10px;
+      background: #f6fbff;
+    }
+
+    .stat strong {
+      display: block;
+      color: var(--brand);
+      font-size: 1.1rem;
+      margin-top: 2px;
+    }
+
+    .hint {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: .87rem;
+    }
+
+    .history {
+      max-height: 180px;
+      overflow: auto;
+      margin: 0;
+      padding-left: 18px;
+      color: #254552;
+    }
+
+    .offline { font-size: .87rem; color: #395e2f; }
+
+    @media (max-width: 680px) {
+      .item { grid-template-columns: 1fr; }
+      .actions { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="card">
+      <h1>Checklist Oględzin Mieszkania</h1>
+      <p class="sub">Pełne PWA: praca offline, zapis wielu oględzin, raport PDF i kalkulator maksymalnej ceny.</p>
+      <p id="offlineStatus" class="offline">Status: sprawdzanie trybu offline...</p>
+    </section>
+
+    <section class="card grid two">
+      <div>
+        <h2>Mieszkania</h2>
+        <label for="inspectionSelect">Wybierz obejrzane mieszkanie</label>
+        <select id="inspectionSelect"></select>
+      </div>
+      <div>
+        <h2>Nowe oględziny</h2>
+        <label for="newInspectionName">Nazwa (np. Gdańsk, Wrzeszcz, ul. X)</label>
+        <input id="newInspectionName" type="text" placeholder="Wpisz nazwę mieszkania">
+      </div>
+      <div class="actions" style="grid-column: 1 / -1;">
+        <button id="createBtn">Dodaj mieszkanie</button>
+        <button id="deleteBtn" class="secondary">Usuń wybrane</button>
+        <button id="resetChecklistBtn" class="ghost">Wyczyść checklistę</button>
+        <button id="pdfBtn" class="good">Generuj raport PDF</button>
+      </div>
+    </section>
+
+    <section class="card grid two">
+      <div class="grid">
+        <h2>Prowadzenie krok po kroku</h2>
+        <div class="progress"><div id="progressBar"></div></div>
+        <div id="stepBox" class="step">
+          <div id="stepCategory" class="cat">Krok</div>
+          <div id="stepText" class="txt"></div>
+          <div class="actions">
+            <button id="yesBtn" class="good">Tak</button>
+            <button id="noBtn" class="bad">Nie</button>
+            <button id="skipBtn" class="ghost">Pomiń</button>
+          </div>
+          <div class="actions">
+            <button id="prevBtn" class="secondary">Poprzedni</button>
+            <button id="nextBtn" class="secondary">Następny</button>
+          </div>
+          <div id="stepFooter" class="stepFooter"></div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <h2>Dane mieszkania</h2>
+        <div class="grid two">
+          <div>
+            <label for="addressInput">Adres / lokalizacja</label>
+            <input id="addressInput" type="text" placeholder="Miasto, dzielnica, ulica">
+          </div>
+          <div>
+            <label for="askingPriceInput">Cena ofertowa (PLN)</label>
+            <input id="askingPriceInput" type="number" min="0" step="1000" placeholder="np. 520000">
+          </div>
+        </div>
+        <div>
+          <label for="notesInput">Notatki z oględzin</label>
+          <textarea id="notesInput" rows="4" placeholder="Uwagi o stanie, sąsiedztwie, dokumentach..."></textarea>
+        </div>
+      </div>
+    </section>
+
+    <section class="card grid two">
+      <div class="grid">
+        <h2>Kalkulator maksymalnej ceny zakupu</h2>
+        <div class="grid two">
+          <div>
+            <label for="rentInput">Zakładany czynsz najmu / mies. (PLN)</label>
+            <input id="rentInput" type="number" min="0" step="100" placeholder="np. 3000">
+          </div>
+          <div>
+            <label for="yieldInput">Docelowa rentowność roczna (%)</label>
+            <input id="yieldInput" type="number" min="1" max="25" step="0.1" placeholder="np. 7.5">
+          </div>
+          <div>
+            <label for="renoInput">Budżet remontu (PLN)</label>
+            <input id="renoInput" type="number" min="0" step="1000" placeholder="np. 60000">
+          </div>
+          <div>
+            <label for="otherInput">Pozostałe koszty (PLN)</label>
+            <input id="otherInput" type="number" min="0" step="1000" placeholder="np. 25000">
+          </div>
+          <div>
+            <label for="riskInput">Bufor ryzyka (%)</label>
+            <input id="riskInput" type="number" min="0" max="30" step="0.5" placeholder="np. 5">
+          </div>
+        </div>
+        <p class="hint">Wynik uwzględnia jakość mieszkania z checklisty. Im więcej negatywnych odpowiedzi, tym niższa rekomendowana cena maksymalna.</p>
+      </div>
+
+      <div class="grid">
+        <h2>Podsumowanie</h2>
+        <div class="stats">
+          <div class="stat">Postęp checklisty<strong id="doneStat">0/0</strong></div>
+          <div class="stat">Wynik jakości<strong id="scoreStat">0%</strong></div>
+          <div class="stat">Cena maksymalna<strong id="maxPriceStat">-</strong></div>
+          <div class="stat">Ocena ceny ofertowej<strong id="verdictStat">-</strong></div>
+        </div>
+        <h2>Historia obejrzanych mieszkań</h2>
+        <ol id="historyList" class="history"></ol>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Pełna checklista</h2>
+      <div id="fullList" class="items"></div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script>
+    const STORAGE_KEY = "inspections_v1";
+    const CHECKLIST = [
+      { cat: "Instalacje", txt: "Instalacja elektryczna wymieniona (miedź)", weight: 2 },
+      { cat: "Instalacje", txt: "Instalacja wod-kan wymieniona", weight: 2 },
+      { cat: "Stan", txt: "Brak wilgoci w łazience i kuchni", weight: 3 },
+      { cat: "Stan", txt: "Brak dużych pęknięć ścian", weight: 2 },
+      { cat: "Stan", txt: "Brak pleśni", weight: 3 },
+      { cat: "Okna", txt: "Okna wymienione", weight: 2 },
+      { cat: "Okna", txt: "Brak przeciągów", weight: 1 },
+      { cat: "Łazienka", txt: "Brak przecieków", weight: 2 },
+      { cat: "Wentylacja", txt: "Wentylacja działa", weight: 2 },
+      { cat: "Budynek", txt: "Klatka schodowa w dobrym stanie", weight: 1 },
+      { cat: "Budynek", txt: "Budynek ocieplony", weight: 1 },
+      { cat: "Budynek", txt: "Winda działa (jeśli dotyczy)", weight: 1 },
+      { cat: "Komfort", txt: "Mieszkanie jest ciche", weight: 2 },
+      { cat: "Komfort", txt: "Dobre światło dzienne", weight: 1 },
+      { cat: "Prawne", txt: "Księga wieczysta bez obciążeń", weight: 3 },
+      { cat: "Prawne", txt: "Lokal wolny od lokatorów", weight: 3 },
+      { cat: "Stan", txt: "Brak zacieków na suficie", weight: 2 },
+      { cat: "Stan", txt: "Brak zapachu wilgoci", weight: 2 },
+      { cat: "Budynek", txt: "Brak historii zalania dachu", weight: 2 }
+    ];
+
+    const ui = {
+      select: document.getElementById("inspectionSelect"),
+      newName: document.getElementById("newInspectionName"),
+      createBtn: document.getElementById("createBtn"),
+      deleteBtn: document.getElementById("deleteBtn"),
+      resetBtn: document.getElementById("resetChecklistBtn"),
+      pdfBtn: document.getElementById("pdfBtn"),
+      stepCategory: document.getElementById("stepCategory"),
+      stepText: document.getElementById("stepText"),
+      stepFooter: document.getElementById("stepFooter"),
+      progress: document.getElementById("progressBar"),
+      yesBtn: document.getElementById("yesBtn"),
+      noBtn: document.getElementById("noBtn"),
+      skipBtn: document.getElementById("skipBtn"),
+      prevBtn: document.getElementById("prevBtn"),
+      nextBtn: document.getElementById("nextBtn"),
+      address: document.getElementById("addressInput"),
+      askingPrice: document.getElementById("askingPriceInput"),
+      notes: document.getElementById("notesInput"),
+      rent: document.getElementById("rentInput"),
+      targetYield: document.getElementById("yieldInput"),
+      renovation: document.getElementById("renoInput"),
+      other: document.getElementById("otherInput"),
+      risk: document.getElementById("riskInput"),
+      fullList: document.getElementById("fullList"),
+      done: document.getElementById("doneStat"),
+      score: document.getElementById("scoreStat"),
+      maxPrice: document.getElementById("maxPriceStat"),
+      verdict: document.getElementById("verdictStat"),
+      history: document.getElementById("historyList"),
+      offlineStatus: document.getElementById("offlineStatus")
+    };
+
+    let inspections = [];
+    let activeId = null;
+    let stepIndex = 0;
+
+    function fmtPLN(value) {
+      if (!Number.isFinite(value)) return "-";
+      return new Intl.NumberFormat("pl-PL", { style: "currency", currency: "PLN", maximumFractionDigits: 0 }).format(value);
+    }
+
+    function nowISO() {
+      return new Date().toISOString();
+    }
+
+    function baseInspection(name) {
+      return {
+        id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+        name,
+        createdAt: nowISO(),
+        updatedAt: nowISO(),
+        address: "",
+        askingPrice: "",
+        notes: "",
+        responses: CHECKLIST.map(() => null),
+        calc: {
+          rent: "",
+          targetYield: "",
+          renovation: "",
+          other: "",
+          risk: ""
+        }
+      };
+    }
+
+    function safeLoad() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return [];
+        return parsed.map(item => ({ ...baseInspection(item.name || "Mieszkanie"), ...item }));
+      } catch (err) {
+        alert("Nie udało się odczytać danych z pamięci urządzenia.");
+        return [];
+      }
+    }
+
+    function safeSave() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(inspections));
+      } catch (err) {
+        alert("Brak miejsca w pamięci lokalnej. Usuń część danych i spróbuj ponownie.");
+      }
+    }
+
+    function getActive() {
+      return inspections.find(i => i.id === activeId) || null;
+    }
+
+    function scoreState(insp) {
+      const max = CHECKLIST.reduce((sum, item) => sum + item.weight, 0);
+      let got = 0;
+      let answered = 0;
+      insp.responses.forEach((val, idx) => {
+        if (val !== null) answered += 1;
+        if (val === true) got += CHECKLIST[idx].weight;
+      });
+      const ratio = max ? got / max : 0;
+      return { got, max, ratio, answered };
+    }
+
+    function computeMaxPrice(insp) {
+      const rent = Number(insp.calc.rent);
+      const targetYield = Number(insp.calc.targetYield);
+      const renovation = Number(insp.calc.renovation) || 0;
+      const other = Number(insp.calc.other) || 0;
+      const risk = Number(insp.calc.risk) || 0;
+      if (!(rent > 0) || !(targetYield > 0)) return null;
+
+      const totalBudget = (rent * 12) / (targetYield / 100);
+      const riskBuffer = totalBudget * (Math.max(0, risk) / 100);
+      const quality = scoreState(insp).ratio;
+      const qualityFactor = 0.8 + (quality * 0.2);
+      const maxPrice = (totalBudget - renovation - other - riskBuffer) * qualityFactor;
+      return Number.isFinite(maxPrice) ? Math.max(0, maxPrice) : null;
+    }
+
+    function touchAndSave() {
+      const active = getActive();
+      if (!active) return;
+      active.updatedAt = nowISO();
+      safeSave();
+      renderHistory();
+      renderStats();
+    }
+
+    function setResponse(idx, value) {
+      const active = getActive();
+      if (!active) return;
+      active.responses[idx] = value;
+      touchAndSave();
+      renderStep();
+      renderChecklist();
+    }
+
+    function renderSelect() {
+      ui.select.innerHTML = "";
+      inspections
+        .slice()
+        .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+        .forEach(insp => {
+          const option = document.createElement("option");
+          option.value = insp.id;
+          option.textContent = `${insp.name} (${new Date(insp.updatedAt).toLocaleDateString("pl-PL")})`;
+          ui.select.appendChild(option);
+        });
+      if (activeId) ui.select.value = activeId;
+    }
+
+    function renderHistory() {
+      const sorted = inspections.slice().sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+      ui.history.innerHTML = "";
+      if (!sorted.length) {
+        const li = document.createElement("li");
+        li.textContent = "Brak zapisanych oględzin.";
+        ui.history.appendChild(li);
+        return;
+      }
+      sorted.forEach(i => {
+        const li = document.createElement("li");
+        const done = i.responses.filter(v => v !== null).length;
+        li.textContent = `${i.name} - ${done}/${CHECKLIST.length} punktów, aktualizacja ${new Date(i.updatedAt).toLocaleString("pl-PL")}`;
+        ui.history.appendChild(li);
+      });
+    }
+
+    function renderChecklist() {
+      const active = getActive();
+      ui.fullList.innerHTML = "";
+      if (!active) return;
+      CHECKLIST.forEach((item, idx) => {
+        const row = document.createElement("div");
+        row.className = "item";
+
+        const left = document.createElement("div");
+        const title = document.createElement("div");
+        title.textContent = item.txt;
+        const meta = document.createElement("small");
+        meta.textContent = `${item.cat} | Waga: ${item.weight}`;
+        left.appendChild(title);
+        left.appendChild(meta);
+
+        const control = document.createElement("select");
+        control.dataset.idx = String(idx);
+        control.innerHTML = [
+          '<option value="null">Pomiń</option>',
+          '<option value="true">Tak</option>',
+          '<option value="false">Nie</option>'
+        ].join("");
+        control.value = String(active.responses[idx]);
+        control.addEventListener("change", (e) => {
+          const val = e.target.value === "null" ? null : e.target.value === "true";
+          setResponse(idx, val);
+        });
+
+        row.appendChild(left);
+        row.appendChild(control);
+        ui.fullList.appendChild(row);
+      });
+    }
+
+    function renderStep() {
+      const active = getActive();
+      if (!active) return;
+      stepIndex = Math.max(0, Math.min(stepIndex, CHECKLIST.length - 1));
+      const step = CHECKLIST[stepIndex];
+      const response = active.responses[stepIndex];
+
+      ui.stepCategory.textContent = `Kategoria: ${step.cat}`;
+      ui.stepText.textContent = step.txt;
+      ui.stepFooter.textContent = `Krok ${stepIndex + 1}/${CHECKLIST.length} | Odpowiedź: ${response === true ? "Tak" : response === false ? "Nie" : "Pominięto"}`;
+
+      const done = active.responses.filter(v => v !== null).length;
+      ui.progress.style.width = `${Math.round((done / CHECKLIST.length) * 100)}%`;
+    }
+
+    function renderForm() {
+      const active = getActive();
+      if (!active) return;
+      ui.address.value = active.address || "";
+      ui.askingPrice.value = active.askingPrice || "";
+      ui.notes.value = active.notes || "";
+      ui.rent.value = active.calc.rent || "";
+      ui.targetYield.value = active.calc.targetYield || "";
+      ui.renovation.value = active.calc.renovation || "";
+      ui.other.value = active.calc.other || "";
+      ui.risk.value = active.calc.risk || "";
+    }
+
+    function renderStats() {
+      const active = getActive();
+      if (!active) return;
+
+      const score = scoreState(active);
+      ui.done.textContent = `${score.answered}/${CHECKLIST.length}`;
+      ui.score.textContent = `${Math.round(score.ratio * 100)}%`;
+
+      const maxPrice = computeMaxPrice(active);
+      ui.maxPrice.textContent = maxPrice === null ? "-" : fmtPLN(maxPrice);
+
+      const asking = Number(active.askingPrice);
+      if (maxPrice === null || !(asking > 0)) {
+        ui.verdict.textContent = "Podaj cenę ofertową, czynsz i rentowność";
+      } else if (asking <= maxPrice) {
+        ui.verdict.textContent = "Cena ofertowa mieści się w limicie";
+      } else {
+        ui.verdict.textContent = "Cena ofertowa przekracza limit";
+      }
+    }
+
+    function syncInputsToState() {
+      const active = getActive();
+      if (!active) return;
+      active.address = ui.address.value.trim();
+      active.askingPrice = ui.askingPrice.value;
+      active.notes = ui.notes.value.trim();
+      active.calc.rent = ui.rent.value;
+      active.calc.targetYield = ui.targetYield.value;
+      active.calc.renovation = ui.renovation.value;
+      active.calc.other = ui.other.value;
+      active.calc.risk = ui.risk.value;
+      touchAndSave();
+    }
+
+    function createInspection() {
+      const name = ui.newName.value.trim();
+      if (!name) {
+        alert("Wpisz nazwę mieszkania.");
+        return;
+      }
+      const item = baseInspection(name);
+      inspections.push(item);
+      activeId = item.id;
+      stepIndex = 0;
+      ui.newName.value = "";
+      safeSave();
+      renderAll();
+    }
+
+    function deleteInspection() {
+      if (!activeId) return;
+      const active = getActive();
+      if (!active) return;
+      const ok = confirm(`Usunąć oględziny: ${active.name}?`);
+      if (!ok) return;
+
+      inspections = inspections.filter(i => i.id !== activeId);
+      activeId = inspections[0] ? inspections[0].id : null;
+      stepIndex = 0;
+      safeSave();
+      renderAll();
+    }
+
+    function resetChecklist() {
+      const active = getActive();
+      if (!active) return;
+      const ok = confirm("Wyczyścić wszystkie odpowiedzi checklisty dla tego mieszkania?");
+      if (!ok) return;
+      active.responses = CHECKLIST.map(() => null);
+      stepIndex = 0;
+      touchAndSave();
+      renderAll();
+    }
+
+    function escapeText(value) {
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+    }
+
+    function reportText(active) {
+      const score = scoreState(active);
+      const maxPrice = computeMaxPrice(active);
+      const lines = [];
+      lines.push(`Raport oględzin: ${active.name}`);
+      lines.push(`Data: ${new Date(active.updatedAt).toLocaleString("pl-PL")}`);
+      lines.push(`Adres: ${active.address || "-"}`);
+      lines.push(`Cena ofertowa: ${active.askingPrice ? fmtPLN(Number(active.askingPrice)) : "-"}`);
+      lines.push(`Wynik checklisty: ${Math.round(score.ratio * 100)}% (${score.answered}/${CHECKLIST.length})`);
+      lines.push(`Maksymalna cena zakupu: ${maxPrice === null ? "-" : fmtPLN(maxPrice)}`);
+      lines.push("");
+      lines.push("Szczegóły checklisty:");
+      CHECKLIST.forEach((item, idx) => {
+        const val = active.responses[idx] === true ? "TAK" : active.responses[idx] === false ? "NIE" : "POMINIETO";
+        lines.push(`- [${val}] ${item.cat}: ${item.txt}`);
+      });
+      lines.push("");
+      lines.push("Notatki:");
+      lines.push(active.notes || "-");
+      return lines;
+    }
+
+    function generatePdf() {
+      const active = getActive();
+      if (!active) return;
+      const lines = reportText(active);
+
+      if (window.jspdf && window.jspdf.jsPDF) {
+        const doc = new window.jspdf.jsPDF({ unit: "pt", format: "a4" });
+        const margin = 40;
+        const pageWidth = 595;
+        const maxLineWidth = pageWidth - (margin * 2);
+        let y = 50;
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(11);
+
+        lines.forEach(line => {
+          const split = doc.splitTextToSize(line, maxLineWidth);
+          split.forEach(part => {
+            if (y > 800) {
+              doc.addPage();
+              y = 50;
+            }
+            doc.text(part, margin, y);
+            y += 15;
+          });
+        });
+
+        const safeName = active.name.replace(/[^a-z0-9]+/gi, "_").replace(/^_+|_+$/g, "") || "mieszkanie";
+        doc.save(`raport_${safeName}.pdf`);
+        return;
+      }
+
+      const printWindow = window.open("", "_blank");
+      if (!printWindow) {
+        alert("Nie udało się otworzyć podglądu wydruku.");
+        return;
+      }
+      printWindow.document.write(`
+        <html><head><title>Raport</title></head><body>
+        <pre style="font-family:Arial,sans-serif;white-space:pre-wrap">${escapeText(lines.join("\n"))}</pre>
+        </body></html>
+      `);
+      printWindow.document.close();
+      printWindow.focus();
+      printWindow.print();
+    }
+
+    function renderAll() {
+      if (!inspections.length) {
+        inspections.push(baseInspection("Pierwsze mieszkanie"));
+        activeId = inspections[0].id;
+        safeSave();
+      }
+
+      if (!getActive()) activeId = inspections[0].id;
+
+      renderSelect();
+      renderHistory();
+      renderForm();
+      renderChecklist();
+      renderStep();
+      renderStats();
+    }
+
+    function bindEvents() {
+      ui.createBtn.addEventListener("click", createInspection);
+      ui.deleteBtn.addEventListener("click", deleteInspection);
+      ui.resetBtn.addEventListener("click", resetChecklist);
+      ui.pdfBtn.addEventListener("click", generatePdf);
+
+      ui.select.addEventListener("change", () => {
+        activeId = ui.select.value;
+        stepIndex = 0;
+        renderAll();
+      });
+
+      [ui.address, ui.askingPrice, ui.notes, ui.rent, ui.targetYield, ui.renovation, ui.other, ui.risk].forEach(el => {
+        el.addEventListener("input", syncInputsToState);
+      });
+
+      ui.prevBtn.addEventListener("click", () => {
+        stepIndex = Math.max(0, stepIndex - 1);
+        renderStep();
+      });
+      ui.nextBtn.addEventListener("click", () => {
+        stepIndex = Math.min(CHECKLIST.length - 1, stepIndex + 1);
+        renderStep();
+      });
+      ui.yesBtn.addEventListener("click", () => {
+        setResponse(stepIndex, true);
+        if (stepIndex < CHECKLIST.length - 1) {
+          stepIndex += 1;
+          renderStep();
+        }
+      });
+      ui.noBtn.addEventListener("click", () => {
+        setResponse(stepIndex, false);
+        if (stepIndex < CHECKLIST.length - 1) {
+          stepIndex += 1;
+          renderStep();
+        }
+      });
+      ui.skipBtn.addEventListener("click", () => {
+        setResponse(stepIndex, null);
+        if (stepIndex < CHECKLIST.length - 1) {
+          stepIndex += 1;
+          renderStep();
+        }
+      });
+    }
+
+    function updateOnlineStatus() {
+      ui.offlineStatus.textContent = navigator.onLine
+        ? "Status: online. Aplikacja zapisuje dane lokalnie i działa po cache offline."
+        : "Status: offline. Korzystasz z wersji zapisanej lokalnie.";
+    }
+
+    function initServiceWorker() {
+      if (!("serviceWorker" in navigator)) return;
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").catch(() => {
+          ui.offlineStatus.textContent = "Status: nie udało się zarejestrować Service Workera.";
+        });
+      });
+    }
+
+    inspections = safeLoad();
+    activeId = inspections[0] ? inspections[0].id : null;
+    bindEvents();
+    renderAll();
+    updateOnlineStatus();
+    initServiceWorker();
+    window.addEventListener("online", updateOnlineStatus);
+    window.addEventListener("offline", updateOnlineStatus);
+  </script>
+</body>
+</html>

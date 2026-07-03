@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192" role="img" aria-label="Checklist Mieszkania">
+  <rect width="192" height="192" rx="36" fill="#103a5a"/>
+  <path d="M34 110h124v48H34z" fill="#f4ead2"/>
+  <path d="M26 108 96 52l70 56z" fill="#d18f38"/>
+  <path d="M72 122h48v36H72z" fill="#9bc5de"/>
+  <rect x="44" y="68" width="22" height="22" rx="4" fill="#e8f0dc"/>
+  <path d="m49 79 6 6 11-11" fill="none" stroke="#2f7a45" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
